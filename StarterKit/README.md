@@ -1,49 +1,50 @@
-# express-monolith-starter (StarterKit-0)
+# Лабораторна робота №1: Початкова архітектура проєкту
 
-Базовий початковий шаблон (StarterKit-0) для виконання **Лабораторної роботи №1** з дисципліни **«Технологія розробки Інтернет-застосунків»** (ХНТУ).
+**Студент:** Калатун Євгеній Володимирович (Група 2Прс)
+**Варіант 1:** B2C Інтернет-магазин електроніки
 
-## 🚀 Швидкий старт
+## Опис предметної області
+Система представляє собою бекенд для інтернет-магазину. 
+- **Сутності:** User (Користувач), Category (Категорія), Product (Товар), Order (Замовлення), OrderItem (Деталі замовлення).
+- **Зв'язки:** 
+  - `Category` 1:N `Product` (в одній категорії багато товарів).
+  - `User` 1:N `Order` (один користувач може зробити багато замовлень).
+  - `Order` N:M `Product` через проміжну таблицю `OrderItem` (замовлення містить багато товарів, товар може бути в багатьох замовленнях). У проміжній таблиці зберігається кількість (`quantity`) та ціна на момент покупки (`priceAtPurchase`).
+- **Ролі користувачів:** USER (Покупець), MANAGER (Менеджер магазину), ADMIN (Системний адмін).
 
-1. **Клонуйте репозиторій у власний GitHub-акаунт:**
-   ```bash
-   git clone <ваш-посилання-на-репозиторій>
-   cd express-monolith-starter
-   ```
+## ER-діаграма (Mermaid)
 
-2. **Встановіть залежності** (потрібен **Node.js 22 LTS**):
-   ```bash
-   node -v   # має бути v22.x
-   npm install
-   ```
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    CATEGORY ||--|{ PRODUCT : contains
+    ORDER ||--|{ ORDER_ITEM : includes
+    PRODUCT ||--o{ ORDER_ITEM : order_details
 
-3. **Налаштуйте змінні оточення:**
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Запустіть сервер у режимі розробки:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Перевірте працездатність:**
-   Відкрийте в браузері або Postman: `http://localhost:3000/api/v1/health`
-
-## 📁 Структура проєкта (Початковий рівень ЛР 1)
-
-```text
-express-monolith-starter/
-├── src/
-│   ├── controllers/          # Папка для обробників запитів (ЛР 2)
-│   ├── services/             # Папка для бізнес-логіки (ЛР 2, 4)
-│   ├── repositories/         # Папка для запитів до БД (ЛР 4)
-│   ├── routes/               # Папка для Express роутів (ЛР 2)
-│   ├── middlewares/          # Папка для допоміжних файлів (ЛР 2, 5)
-│   ├── types/                # TypeScript типи та інтерфейси
-│   ├── app.ts                # Ініціалізація Express-застосунку
-│   └── server.ts             # Точка входу та HTTP-слухач
-├── .env.example              # Приклад зміних оточення
-├── package.json              # Залежності проєкту
-├── README.md                 # Опис предметної області та ERD
-└── tsconfig.json             # Налаштування TypeScript
-```
+    USER {
+        int id PK
+        string email
+        string role
+    }
+    CATEGORY {
+        int id PK
+        string name
+    }
+    PRODUCT {
+        int id PK
+        int categoryId FK
+        string title
+        float price
+    }
+    ORDER {
+        int id PK
+        int userId FK
+        float totalAmount
+    }
+    ORDER_ITEM {
+        int id PK
+        int orderId FK
+        int productId FK
+        int quantity
+        float priceAtPurchase
+    }
