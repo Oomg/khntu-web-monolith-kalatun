@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Користувач (Глядач)
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      String    @default("USER")
+  bookings  Booking[] // Зв'язок 1:N
+  createdAt DateTime  @default(now())
+
+  // Бонусний плюс у рейтинг: кастомний індекс для оптимізації пошуку
+  @@index([email])
+}
+
+// 2. Жанр фільму
+model Genre {
+  id      Int     @id @default(autoincrement())
+  name    String
+  movies  Movie[] // Зв'язок 1:N
+}
+
+// 3. Фільм
+model Movie {
+  id          Int       @id @default(autoincrement())
+  title       String
+  durationMin Int
+  genreId     Int
+  genre       Genre     @relation(fields: [genreId], references: [id])
+  tickets     Ticket[]
+}
+
+// 4. Бронювання (Замовлення)
+model Booking {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  status      String    @default("PENDING")
+  totalAmount Float
+  user        User      @relation(fields: [userId], references: [id])
+  tickets     Ticket[]
+}
+
+// 5. Квиток (Проміжна таблиця для зв'язку N:M між Booking та Movie)
+model Ticket {
+  id              Int     @id @default(autoincrement())
+  bookingId       Int
+  movieId         Int
+  seatNumber      String  // Додатковий атрибут
+  priceAtPurchase Float   // Додатковий атрибут (історична ціна)
+
+  booking         Booking @relation(fields: [bookingId], references: [id])
+  movie           Movie   @relation(fields: [movieId], references: [id])
+}
