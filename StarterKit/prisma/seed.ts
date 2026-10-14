@@ -5,21 +5,14 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Починаємо заповнення бази даних...');
 
-  // Створюємо кілька жанрів
-  const actionGenre = await prisma.genre.create({
-    data: { name: 'Бойовик' }
+  const category = await prisma.category.create({
+    data: { name: 'Електроніка' }
   });
 
-  const comedyGenre = await prisma.genre.create({
-    data: { name: 'Комедія' }
-  });
-
-  // Створюємо кілька фільмів, прив'язуючи їх до жанрів
-  await prisma.movie.createMany({
+  await prisma.product.createMany({
     data: [
-      { title: 'Дедпул і Росомаха', durationMin: 128, genreId: actionGenre.id },
-      { title: 'Джентльмени', durationMin: 113, genreId: actionGenre.id },
-      { title: 'Сам удома', durationMin: 103, genreId: comedyGenre.id }
+      { title: 'Ноутбук Dell', price: 30000, categoryId: category.id },
+      { title: 'Монітор LG 27"', price: 9000, categoryId: category.id }
     ]
   });
 
