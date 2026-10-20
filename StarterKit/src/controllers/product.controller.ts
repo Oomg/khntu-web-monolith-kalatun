@@ -1,21 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
-import { ProductService } from '../services/product.service';
+import { ProductRepository } from '../repositories/product.repository';
 
-const productService = new ProductService();
+const productRepo = new ProductRepository();
 
 export class ProductController {
-  static getAll(req: Request, res: Response) {
-    const items = productService.getAll();
-    res.status(200).json({ status: 'success', data: items });
+  static async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Зчитуємо параметри пагінації з URL (наприклад: ?page=1&limit=5)
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const result = await productRepo.findPaginated(page, limit);
+      res.status(200).json({ status: 'success', data: result });
+    } catch (error) {
+      next(error);
+    }
   }
 
-  static getById(req: Request, res: Response, next: NextFunction) {
+  static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = Number(req.params.id);
-      const item = productService.getById(id);
-      res.status(200).json({ status: 'success', data: item });
+      // Оскільки дані вже перевірені нашим Zod-мідлваром, можемо їх просто повернути (імітація збереження)
+      res.status(201).json({ 
+        status: 'success', 
+        message: 'Товар успішно пройшов валідацію', 
+        data: req.body 
+      });
     } catch (error) {
-      next(error); // Передаємо помилку в errorHandler!
+      next(error);
     }
   }
 }
