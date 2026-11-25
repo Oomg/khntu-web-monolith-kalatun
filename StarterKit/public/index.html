@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="khntu-lab6-e2e" content="verified">
+  <title>Клієнтський UI — Наскрізний проєкт ХНТУ</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f4f6f8; }
+    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, button { padding: 8px; margin: 5px 0; }
+    button { background: #0284c7; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    button:hover { background: #0369a1; }
+    #productList { list-style: none; padding: 0; }
+    #productList li { padding: 8px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>Панель управління навчального проєкту</h1>
+
+  <!-- Форма Входу -->
+  <div class="card">
+    <h2>1. Автентифікація</h2>
+    <input type="email" id="email" placeholder="Email" value="admin@shop.ua">
+    <input type="password" id="password" placeholder="Пароль" value="admin123">
+    <button onclick="login()">Увійти</button>
+    <button onclick="logout()" style="background:#dc2626;">Очистити токен</button>
+    <p id="authStatus"></p>
+  </div>
+
+  <!-- Список Ресурсів -->
+  <div class="card">
+    <h2>2. Список ресурсів (Fetch API)</h2>
+    <button onclick="loadProducts()">Оновити список</button>
+    <ul id="productList"></ul>
+  </div>
+
+  <script>
+    let token = '';
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        token = data.data.token;
+        document.getElementById('authStatus').innerText = '✅ Успішний вхід! Токен отримано. Роль: ' + data.data.user.role;
+      } else {
+        document.getElementById('authStatus').innerText = '❌ Помилка: ' + (data.message || 'Невідома помилка');
+      }
+    }
+
+    function logout() {
+      token = '';
+      document.getElementById('authStatus').innerText = 'Сесія завершена';
+      document.getElementById('productList').innerHTML = '';
+    }
+
+    async function loadProducts() {
+      const res = await fetch('/api/v1/products', {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      });
+      const data = await res.json();
+
+      const list = document.getElementById('productList');
+      list.innerHTML = '';
+
+      const items = data.data?.items || data.data || [];
+      if (Array.isArray(items) && items.length > 0) {
+        items.forEach(item => {
+          const li = document.createElement('li');
+          li.innerText = `${item.title} — ${item.price} грн`;
+          list.appendChild(li);
+        });
+      } else {
+        list.innerHTML = '<li>Список порожній або помилка завантаження</li>';
+      }
+    }
+  </script>
+</body>
+</html>
